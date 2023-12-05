@@ -4,6 +4,46 @@ from sys import exit
 
 def main():
     assert (day1() == 55002)
+    assert (day2() == 55093)
+
+
+def day2() -> int:
+    data: str
+    # NOTE: data same as day1
+    with open(os.path.join('input', 'day1')) as infile:
+        data = (infile.read()).strip()
+    digits: list[str] = ['one', 'two', 'three', 'four', 'five', 'six', 'seven',
+                         'eight', 'nine', ]
+    total: int = 0
+    for line in data.splitlines():
+        first, last = None, None
+        buf_first, buf_last = list(), list()
+        for (f, l) in zip(line, line[::-1]):
+            if first and last:
+                break
+            if first is None:
+                if f.isdigit():
+                    first = f
+                if f.isalpha():
+                    buf_first.append(f)
+                    str_first = ''.join(buf_first)
+                    for d in digits:
+                        if d in str_first:
+                            first = str(digits.index(d) + 1)
+                            break
+            if last is None:
+                if l.isdigit():
+                    last = l
+                if l.isalpha():
+                    buf_last.append(l)
+                    str_last = ''.join(buf_last[::-1])
+                    for d in digits:
+                        if d in str_last:
+                            last = str(digits.index(d) + 1)
+                            break
+        if first and last:
+            total += int(f'{first}{last}')
+    return total
 
 
 def day1() -> int:
