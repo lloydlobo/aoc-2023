@@ -150,17 +150,17 @@ def check() -> int:
     tmp_infile: TextIO
     infile: TextIO
 
-    FILEPATH = os.path.join('input', 'day4')
-    with open(FILEPATH) as infile:
-        assert (part1(infile) == 22674)
-    with open(FILEPATH) as infile:
-        assert (part2(infile) == 5747443)
-
     TMP_FILEPATH = os.path.join('days', 'tmp_day4')
     with open(TMP_FILEPATH) as tmp_infile:
         assert (part1(tmp_infile) == 13)
     with open(TMP_FILEPATH) as tmp_infile:
         assert (part2(tmp_infile) == 30)
+
+    FILEPATH = os.path.join('input', 'day4')
+    with open(FILEPATH) as infile:
+        assert (part1(infile) == 22674)
+    with open(FILEPATH) as infile:
+        assert (part2(infile) == 5747443)
 
     return 0
 
