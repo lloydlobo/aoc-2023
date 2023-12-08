@@ -12,7 +12,6 @@ def part1(input):
         p1 += int(p1_digits[0] + p1_digits[-1])
 
     print(p1)
-    assert (p1 == 55002)
 
 
 def part2(input):
@@ -31,7 +30,6 @@ def part2(input):
         p2 += int(p2_digits[0] + p2_digits[-1])
 
     print(p2)
-    assert (p2 == 55093)
 
 
 check_test(part1, part2)
