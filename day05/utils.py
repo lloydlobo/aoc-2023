@@ -1,8 +1,10 @@
 import sys
 import itertools
 import regex
+import re
 from collections import deque, defaultdict, Counter
 from typing import TypeVar, Generator, Iterable, Tuple, List, Any
+from pprint import pprint
 
 sys.setrecursionlimit(100_000)
 
@@ -29,3 +31,18 @@ def check(part1, part2):
     data: str = read_input(filename)
     part1(data)
     part2(data)
+
+
+# region Strings, lists, dicts
+#
+# References:
+#   - https://github.com/mcpower/adventofcode/blob/master/utils.py
+
+def lmap(func, *iterables):
+    return list(map(func, *iterables))
+
+
+def ints(s: str) -> list[int]:
+    return lmap(int, re.findall(r"-?\d+", s))
+
+# endregion

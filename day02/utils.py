@@ -2,7 +2,7 @@ import sys
 import itertools
 import regex
 from collections import deque, defaultdict, Counter
-from typing import TypeVar, Generator, Iterable, Tuple, List
+from typing import TypeVar, Generator, Iterable, Tuple, List, Any
 
 sys.setrecursionlimit(100_000)
 
@@ -19,13 +19,13 @@ def read_input(filename) -> str:
 
 def check_test(part1, part2):
     filename = 'testinput.txt'
-    input: str = read_input(filename)
-    part1(input)
-    part2(input)
+    data: str = read_input(filename)
+    part1(data)
+    part2(data)
 
 
 def check(part1, part2):
     filename = 'input.txt'
-    input: str = read_input(filename)
-    part1(input)
-    part2(input)
+    data: str = read_input(filename)
+    part1(data)
+    part2(data)
