@@ -2,14 +2,35 @@ import math  # import cProfile
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.patheffects import withStroke
+
+# import matplotlib as mpl
+# mpl.font_manager._rebuild()
+# pip install matplotlib-sourcecodepro-font
+
+# import matplotlib.font_manager as fm
+# from matplotlib import rcParams
+#
+# Force Matplotlib to update the font cache
+# prop = fm.FontProperties(
+#     fname=fm.findfont(fm.FontProperties(family='Source Code Pro')))
+#
+# Set the default font for numbers
+# rcParams['font.family'] = 'Source Code Pro'
+# rcParams['font.size'] = 9
 
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio -> 1.618033988749895
 
-holiday_red = '#FF4136'
-holiday_green = '#2ECC40'
-holiday_blue = '#0074CC'
-holiday_yellow = '#FFD700'
-holiday_purple = '#B10DC9'
+holiday_red = '#FF7272'  # A deep, warm red
+holiday_green = '#6FFF6F'  # A vibrant, holiday-themed green
+holiday_green_glow = '#00FF00'  # A bright green glow for emphasis
+holiday_blue = '#8C8CFF'  # A rich, dark blue for contrast
+holiday_yellow = '#FFE066'  # A soft, golden yellow
+holiday_purple = '#D872E8'  # A muted purple for a touch of elegance
+holiday_night_bg = '#1A1A33'  # A deep, dark background for the night sky
+
+holiday_colors = [holiday_red, holiday_yellow, holiday_blue, holiday_purple,
+                  holiday_green]
 
 
 def golden_spiral(num_points):
@@ -58,9 +79,8 @@ def plot_days():
         index: int = scale * day
         x_pt, y_pt = x[index - 1], y[index - 1]
         tangent_angle = np.arctan2(y_pt, x_pt)
-        # @formatter:off
-        x_off, y_off = offset * np.cos(tangent_angle), offset * np.sin( tangent_angle)
-        # @formatter:on
+        x_off, y_off = offset * np.cos(tangent_angle), offset * np.sin(
+            tangent_angle)
         nx, ny = x_pt + x_off, y_pt + y_off
 
         day_pos = (nx - (x_off / (PHI ** 2)), ny - (y_off / (PHI ** 2)))
@@ -71,16 +91,38 @@ def plot_days():
         week, day_txt_url = (day - 1) // 7, f'{cur_yr_url}/day/{day}'
         plt.scatter(x_pt, y_pt, color=(to_rgba(get_week_color(week), 1.0)),
                     marker='*', label=f'Day {day}', s=14, visible=False)
+
+        # Add additional text elements with the stroke effect for stars
+        for pe in path_effects_stars:
+            for star in star_pos:  # Scatter plots for Stars
+                plt.scatter(star['x'], star['y'],
+                            color=to_rgba(holiday_yellow, 0.005 * PHI),
+                            marker='*',
+                            path_effects=[pe], s=16)
         for star in star_pos:  # Scatter plots for Stars
             plt.scatter(star['x'], star['y'], color='goldenrod', marker='*',
-                        label=f'Star {star_pos.index(star) + 1}', s=12)
+                        label=f'Star {star_pos.index(star) + 1}', s=8)
+
         # Draw line from origin to day point
-        plt.plot([0, day_pos[0]], [0, day_pos[1]],
+        # plt.plot([0, day_pos[0]], [0, day_pos[1]],
+        plt.plot([star_pos[0]['x'], star_pos[1]['x']],
+                 [star_pos[0]['y'], star_pos[1]['y']],
                  color=(to_rgba(get_week_color(week), PHI / (2 * np.pi))),
-                 linestyle='-.', linewidth=1)
-        plt.annotate(str(day), day_pos, ha='center', va='center',
-                     color=holiday_green, fontweight='bold', fontsize='9',
-                     url=day_txt_url)
+                 linestyle='dotted', linewidth=PHI / np.sqrt(np.pi))
+        plt.plot([star_pos[1]['x'], day_pos[0]],
+                 [star_pos[1]['y'], day_pos[1]],
+                 color=(to_rgba(get_week_color(week), PHI / (4 * np.pi))),
+                 linestyle='dotted', linewidth=PHI / np.sqrt(np.pi))
+
+        # Create a main text element for the day number
+        main_text = plt.annotate(str(day), day_pos, ha='center', va='center',
+                                 color=holiday_green, fontweight='bold',
+                                 fontsize='9', url=day_txt_url)
+        # Add additional text elements with the stroke effect
+        for pe in path_effects_text:
+            plt.annotate(str(day), day_pos, ha='center', va='center',
+                         color='none', fontweight='bold', fontsize='9',
+                         url=day_txt_url, path_effects=[pe])
 
 
 days, scale = 25, 365
@@ -88,8 +130,26 @@ num_points = days * scale
 x, y = golden_spiral(num_points)
 
 plt.style.use('dark_background')
-holiday_colors = [holiday_red, holiday_yellow, holiday_blue, holiday_purple,
-                  holiday_green, ]
+# Customize colors for dark background
+plt.rcParams.update({
+    "figure.facecolor": holiday_night_bg,  # Background color for entire figure
+    # "axes.facecolor": "#111111",    # Background color for the axes
+    # "axes.edgecolor": "#555555",    # Color of the axes' edges
+    # "axes.labelcolor": "white",     # Color of axis labels
+    # "text.color": "white",          # Color of text
+    # "xtick.color": "white",         # Color of x-axis ticks
+    # "ytick.color": "white"          # Color of y-axis ticks
+})
+# Create a stroke path effect to simulate glow
+common_stroke = lambda color: [
+    withStroke(linewidth=5 / PHI, foreground=to_rgba(color, 0.025 * PHI)),
+    withStroke(linewidth=3 / PHI, foreground=to_rgba(color, 0.05 * PHI)),
+    withStroke(linewidth=2 / PHI, foreground=to_rgba(color, 0.1 * PHI))
+]
+path_effects_text = common_stroke(holiday_green_glow)
+path_effects_stars = common_stroke('#FFE066')
+# @formatter:off
+# @formatter:on
 
 plt.plot(x, y, label='Golden Spiral', color='goldenrod', visible=False)
 plot_days()
