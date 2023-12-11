@@ -1,4 +1,7 @@
-import math  # import cProfile
+import cProfile
+import math
+from datetime import datetime
+from pprint import pprint
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,6 +21,8 @@ from matplotlib.patheffects import withStroke
 # Set the default font for numbers
 # rcParams['font.family'] = 'Source Code Pro'
 # rcParams['font.size'] = 9
+
+timestamp = datetime.now().strftime('%Y%m%d')  # '%Y%m%d%H%M%S'
 
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio -> 1.618033988749895
 
@@ -68,51 +73,57 @@ def to_rgba(hex, alpha: float = 1.0):
     return tuple(np.append(rgb_color, alpha))
 
 
-def plot_days():
-    """Annotate each point with day number, stars and draw lines from (0,0)"""
-    offset = (-0.1) * PHI  # Adjust for precise positioning
-
-    base_url, cur_year = 'https://adventofcode.com', 2023
-    cur_yr_url = f'{base_url}/{cur_year}'
-
+def compute_coordinates(offset):
+    coordinates = []
     for day in range(1, days + 1):
         index: int = scale * day
         x_pt, y_pt = x[index - 1], y[index - 1]
+
         tangent_angle = np.arctan2(y_pt, x_pt)
         x_off, y_off = offset * np.cos(tangent_angle), offset * np.sin(
             tangent_angle)
         nx, ny = x_pt + x_off, y_pt + y_off
-
-        day_pos = (nx - (x_off / (PHI ** 2)), ny - (y_off / (PHI ** 2)))
+        day_coords = (nx - (x_off / (PHI ** 2)), ny - (y_off / (PHI ** 2)))
         gap_x, gap_y = nx + 2 * x_off, ny + 2 * y_off
-        star_pos = [{'x': (gap_x / PHI ** 3), 'y': (gap_y / PHI ** 3)},
-                    {'x': (gap_x / PHI ** 1), 'y': (gap_y / PHI ** 1)}, ]
+        star_coords = [{'x': (gap_x / PHI ** 3), 'y': (gap_y / PHI ** 3)},
+                       {'x': (gap_x / PHI ** 1), 'y': (gap_y / PHI ** 1)}, ]
 
-        week, day_txt_url = (day - 1) // 7, f'{cur_yr_url}/day/{day}'
+        coordinates.append((day_coords, star_coords, x_pt, y_pt))
+    return coordinates
+
+
+def plot_days():
+    """Annotate each point with day number, stars and draw lines from (0,0)"""
+    base_url, cur_year = 'https://adventofcode.com', timestamp[:4]
+    offset = -0.1 * PHI  # Adjust for precise positioning
+    coordinates = compute_coordinates(offset)
+
+    for day in range(1, days + 1):
+        day_pos, star_pos, x_pt, y_pt = coordinates[day - 1]
+
+        week, day_txt_url = (day - 1) // 7, f'{base_url}/{cur_year}/day/{day}'
+
         plt.scatter(x_pt, y_pt, color=(to_rgba(get_week_color(week), 1.0)),
                     marker='*', label=f'Day {day}', s=14, visible=False)
+
+        # Draw line from origin to day point ([0, day_pos[0]], [0, day_pos[1]])
+        plt.plot([star_pos[0]['x'], star_pos[1]['x']],
+                 [star_pos[0]['y'], star_pos[1]['y']],
+                 color=(to_rgba(get_week_color(week), PHI / (1 * np.pi))),
+                 linestyle='dotted', linewidth=PHI / np.sqrt(np.pi))
+        plt.plot([star_pos[1]['x'], day_pos[0]], [star_pos[1]['y'], day_pos[1]],
+                 color=(to_rgba(get_week_color(week), PHI / (PHI * np.pi))),
+                 linestyle='dotted', linewidth=PHI / np.sqrt(np.pi))
 
         # Add additional text elements with the stroke effect for stars
         for pe in path_effects_stars:
             for star in star_pos:  # Scatter plots for Stars
                 plt.scatter(star['x'], star['y'],
-                            color=to_rgba(holiday_yellow, 0.005 * PHI),
-                            marker='*',
-                            path_effects=[pe], s=16)
+                            color=to_rgba(holiday_yellow, 0.05 * PHI),
+                            marker='*', path_effects=[pe], s=14)
         for star in star_pos:  # Scatter plots for Stars
             plt.scatter(star['x'], star['y'], color='goldenrod', marker='*',
-                        label=f'Star {star_pos.index(star) + 1}', s=8)
-
-        # Draw line from origin to day point
-        # plt.plot([0, day_pos[0]], [0, day_pos[1]],
-        plt.plot([star_pos[0]['x'], star_pos[1]['x']],
-                 [star_pos[0]['y'], star_pos[1]['y']],
-                 color=(to_rgba(get_week_color(week), PHI / (1 * np.pi))),
-                 linestyle='dotted', linewidth=PHI / np.sqrt(np.pi))
-        plt.plot([star_pos[1]['x'], day_pos[0]],
-                 [star_pos[1]['y'], day_pos[1]],
-                 color=(to_rgba(get_week_color(week), PHI / (2 * np.pi))),
-                 linestyle='dotted', linewidth=PHI / np.sqrt(np.pi))
+                        label=f'Star {star_pos.index(star) + 1}', s=12)
 
         # Add additional text elements with the stroke effect
         for pe in path_effects_text:
@@ -125,37 +136,60 @@ def plot_days():
                                   fontsize='9', url=day_txt_url)
 
 
-days, scale = 25, 365
-num_points = days * scale
-x, y = golden_spiral(num_points)
+def run_plt():
+    global days, scale, x, y, path_effects_text, path_effects_stars
 
-plt.style.use('dark_background')
-# Customize colors for dark background
-plt.rcParams.update({
-    "figure.facecolor": holiday_night_bg,  # Background color for entire figure
-    # "axes.facecolor": "#111111",    # Background color for the axes
-    # "axes.edgecolor": "#555555",    # Color of the axes' edges
-    # "axes.labelcolor": "white",     # Color of axis labels
-    # "text.color": "white",          # Color of text
-    # "xtick.color": "white",         # Color of x-axis ticks
-    # "ytick.color": "white"          # Color of y-axis ticks
-})
-# Create a stroke path effect to simulate glow
-common_stroke = lambda color: [
-    withStroke(linewidth=5 / PHI, foreground=to_rgba(color, 0.025 * PHI)),
-    withStroke(linewidth=3 / PHI, foreground=to_rgba(color, 0.05 * PHI)),
-    withStroke(linewidth=2 / PHI, foreground=to_rgba(color, 0.1 * PHI))
-]
-path_effects_text = common_stroke(holiday_green_glow)
-path_effects_stars = common_stroke('#FFE066')
-# @formatter:off
-# @formatter:on
+    days, scale = 25, 100  # 25, 365
+    num_points = days * scale
 
-plt.plot(x, y, label='Golden Spiral', color='goldenrod', visible=False)
-plot_days()
+    x, y = golden_spiral(num_points)
 
-plt.axis('off')  # Hide axis ticks and labels
-plt.axis('equal')  # Set equal aspect ratio. 1 unit of x == 1 unit of y
-plt.title('Advent Of Code', color='goldenrod', fontsize='9', visible=False)
+    plt.style.use('dark_background')
 
-plt.show()
+    # Customize colors for dark background
+    # @formatter:off
+    plt.rcParams.update({
+        "figure.facecolor": holiday_night_bg, # Background color for entire figure
+        # "axes.facecolor": "#111111",    # Background color for the axes
+        # "axes.edgecolor": "#555555",    # Color of the axes' edges
+        # "axes.labelcolor": "white",     # Color of axis labels
+        # "text.color": "white",          # Color of text
+        # "xtick.color": "white",         # Color of x-axis ticks
+        # "ytick.color": "white"          # Color of y-axis ticks
+    })
+    # @formatter:on
+
+    # Create a stroke path effect to simulate glow
+    common_stroke = lambda color: [
+        withStroke(linewidth=5 / PHI, foreground=to_rgba(color, 0.025 * PHI)),
+        withStroke(linewidth=3 / PHI, foreground=to_rgba(color, 0.05 * PHI)),
+        withStroke(linewidth=2 / PHI, foreground=to_rgba(color, 0.1 * PHI))
+    ]
+    path_effects_text = common_stroke(holiday_green_glow)
+    path_effects_stars = common_stroke('#FFE066')
+
+    plt.plot(x, y, label='Golden Spiral', color='goldenrod', visible=False)
+
+    plot_days()
+
+    plt.axis('off')  # Hide axis ticks and labels
+    plt.axis('equal')  # Set equal aspect ratio. 1 unit of x == 1 unit of y
+    plt.title('Advent Of Code', color='goldenrod', fontsize='9', visible=False)
+
+    return plt
+
+
+def main():
+    updated_plt: matplotlib.pyplot = run_plt()
+    # @formatter:off
+    outfile_name = f'{timestamp}-aoc-{timestamp[:4]}'
+    updated_plt.savefig(f'{outfile_name}.png', transparent=True, facecolor=holiday_night_bg)
+    updated_plt.savefig(f'{outfile_name}.pdf', format='pdf', facecolor=holiday_night_bg)
+    # updated_plt.show()
+    # @formatter:on
+
+    return 0
+
+
+if __name__ == '__main__':
+    cProfile.run('main()', sort='cumulative')
