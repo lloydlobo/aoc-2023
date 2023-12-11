@@ -107,22 +107,22 @@ def plot_days():
         # plt.plot([0, day_pos[0]], [0, day_pos[1]],
         plt.plot([star_pos[0]['x'], star_pos[1]['x']],
                  [star_pos[0]['y'], star_pos[1]['y']],
-                 color=(to_rgba(get_week_color(week), PHI / (2 * np.pi))),
+                 color=(to_rgba(get_week_color(week), PHI / (1 * np.pi))),
                  linestyle='dotted', linewidth=PHI / np.sqrt(np.pi))
         plt.plot([star_pos[1]['x'], day_pos[0]],
                  [star_pos[1]['y'], day_pos[1]],
-                 color=(to_rgba(get_week_color(week), PHI / (4 * np.pi))),
+                 color=(to_rgba(get_week_color(week), PHI / (2 * np.pi))),
                  linestyle='dotted', linewidth=PHI / np.sqrt(np.pi))
 
-        # Create a main text element for the day number
-        main_text = plt.annotate(str(day), day_pos, ha='center', va='center',
-                                 color=holiday_green, fontweight='bold',
-                                 fontsize='9', url=day_txt_url)
         # Add additional text elements with the stroke effect
         for pe in path_effects_text:
             plt.annotate(str(day), day_pos, ha='center', va='center',
                          color='none', fontweight='bold', fontsize='9',
                          url=day_txt_url, path_effects=[pe])
+        # Create a main text element for the day number
+        _main_text = plt.annotate(str(day), day_pos, ha='center', va='center',
+                                  color=holiday_green, fontweight='bold',
+                                  fontsize='9', url=day_txt_url)
 
 
 days, scale = 25, 365
