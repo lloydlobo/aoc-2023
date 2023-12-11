@@ -33,6 +33,7 @@ holiday_night_bg = '#1A1A33'  # A deep, dark background for the night sky
 
 holiday_colors = [holiday_red, holiday_yellow, holiday_blue, holiday_purple,
                   holiday_green]
+LEN_HOLIDAY_COLORS = len(holiday_colors)
 
 
 def golden_spiral(num_points: int):
@@ -54,7 +55,7 @@ def golden_spiral(num_points: int):
 
 
 def get_week_color(week: int) -> str:
-    return holiday_colors[week % len(holiday_colors)]
+    return holiday_colors[week % LEN_HOLIDAY_COLORS]
 
 
 def to_rgba(hex_str: str, alpha: float = 1.0) -> tuple[Any, ...]:
@@ -67,9 +68,9 @@ def to_rgba(hex_str: str, alpha: float = 1.0) -> tuple[Any, ...]:
     """
     assert (0.0 <= alpha <= 1.0 and 'Expected 0.0 <= alpha <= 1.0')
     hex_val = int(hex_str[1:], 16)  # hex.replace('#', '') == hex[1:]
-    r: int = (hex_val >> 16) & 255
-    g: int = (hex_val >> 8) & 255
-    b: int = (hex_val & 255)
+    r = (hex_val >> 16) & 255
+    g = (hex_val >> 8) & 255
+    b = (hex_val & 255)
     rgb: list[int] = [r, g, b]
     rgb_color = np.array(rgb).astype(float) / 255.0
     return tuple(np.append(rgb_color, alpha))
@@ -87,10 +88,10 @@ def compute_coordinates(offset: float):
                         offset * np.sin(tangent_angle))
 
         nx, ny = x_pt + x_off, y_pt + y_off
-        day_coords = nx - (x_off * PHI_SQUARE_INVERSE), ny - (
-                y_off * PHI_SQUARE_INVERSE)
+        day_coords = (nx - (x_off * PHI_SQUARE_INVERSE),
+                      ny - (y_off * PHI_SQUARE_INVERSE))
 
-        gap_x, gap_y = nx + 2 * x_off, ny + 2 * y_off
+        gap_x, gap_y = nx + (2 * x_off), ny + (2 * y_off)
         star_coords = [
             {'x': (gap_x * PHI_CUBE_INVERSE), 'y': (gap_y * PHI_CUBE_INVERSE)},
             {'x': (gap_x * PHI_INVERSE), 'y': (gap_y * PHI_INVERSE)}, ]
@@ -98,6 +99,34 @@ def compute_coordinates(offset: float):
         coordinates.append((day_coords, star_coords, x_pt, y_pt))
 
     return coordinates
+
+
+# def compute_coordinates(offset: float, days: int, scale: int, x: ndarray,
+#                         y: ndarray):
+#     coordinates = []
+#
+#     indices = np.arange(1, days + 1) * scale
+#     x_pts, y_pts = x[indices - 1], y[indices - 1]
+#
+#     tangent_angles = np.arctan2(y_pts, x_pts)
+#     x_offs, y_offs = offset * np.cos(tangent_angles), offset * np.sin(
+#         tangent_angles)
+#
+#     nx, ny = x_pts + x_offs, y_pts + y_offs
+#     day_coords = np.column_stack([nx - (x_offs * PHI_SQUARE_INVERSE),
+#                                   ny - (y_offs * PHI_SQUARE_INVERSE)])
+#
+#     gap_x, gap_y = nx + (2 * x_offs), ny + (2 * y_offs)
+#     star_coords = np.column_stack([
+#         gap_x * PHI_CUBE_INVERSE, gap_y * PHI_CUBE_INVERSE,
+#         gap_x * PHI_INVERSE, gap_y * PHI_INVERSE
+#     ]).reshape((-1, 2))
+#
+#     for day, (day_coord, star_coord, x_pt, y_pt) in enumerate(
+#             zip(day_coords, star_coords, x_pts, y_pts), start=1):
+#         coordinates.append((day_coord, star_coord, x_pt, y_pt))
+#
+#     return coordinates
 
 
 def plot_days(coordinates):
@@ -108,6 +137,8 @@ def plot_days(coordinates):
 
     for day in range(1, days + 1):
         day_pos, star_pos, x_pt, y_pt = coordinates[day - 1]
+        day_pos_x, day_pos_y = day_pos
+        strday = str(day)
 
         week, day_txt_url = (day - 1) // 7, f'{base_url}/{cur_year}/day/{day}'
         week_color = get_week_color(week)
@@ -116,11 +147,11 @@ def plot_days(coordinates):
         #     plt.scatter(x_pt, y_pt, color=(to_rgba(week_color, 0.5)),
         #                 marker='*', label=f'Day {day}', s=4, visible=True)
 
-        for pe in path_effects_stars:  # Add elements with glow effect for stars
-            for star in star_pos:  # Scatter plots for Stars
-                plt.scatter(star['x'], star['y'], color=star_glow_color,
-                            marker='*', path_effects=[pe],
-                            s=14 if star_pos.index(star) + 1 == 2 else 7)
+        # for pe in path_effects_stars:  # Add elements with glow effect for stars
+        #     for star in star_pos:  # Scatter plots for Stars
+        #         plt.scatter(star['x'], star['y'], color=star_glow_color,
+        #                     marker='*', path_effects=[pe],
+        #                     s=14 if star_pos.index(star) + 1 == 2 else 7)
         for star in star_pos:  # Scatter plots for Stars
             index_star_ = star_pos.index(star) + 1
             plt.scatter(star['x'], star['y'], color='goldenrod', marker='*',
@@ -128,10 +159,10 @@ def plot_days(coordinates):
                         s=12 if index_star_ == 2 else 5)
 
         for pe in path_effects_text:  # Add text elements with the stroke effect
-            plt.text(s=str(day), x=day_pos[0], y=day_pos[1], ha='center',
+            plt.text(s=strday, x=day_pos_x, y=day_pos_y, ha='center',
                      va='center', color='none', fontweight='bold', fontsize='9',
                      path_effects=[pe])
-        plt.annotate(str(day), day_pos, ha='center', va='center',
+        plt.annotate(strday, day_pos, ha='center', va='center',
                      color=holiday_green, fontweight='bold', fontsize='9',
                      url=day_txt_url)
 
@@ -141,7 +172,7 @@ def plot_days(coordinates):
                  color=(to_rgba(week_color, PLT_INNER_LINE_ALPHA)),
                  linestyle='dotted',
                  linewidth=PLT_DAY_ORIGIN_LINE_WIDTH)  # inner
-        plt.plot([star_pos[1]['x'], day_pos[0]], [star_pos[1]['y'], day_pos[1]],
+        plt.plot([star_pos[1]['x'], day_pos_x], [star_pos[1]['y'], day_pos_y],
                  color=(to_rgba(week_color, PLT_OUTER_LINE_ALPHA)),
                  linestyle='dotted',
                  linewidth=PLT_DAY_ORIGIN_LINE_WIDTH)  # outer
@@ -150,7 +181,7 @@ def plot_days(coordinates):
 def run_plt():
     global days, scale, x, y, path_effects_text, path_effects_stars
 
-    days, scale = 25, 100  # 25, 365
+    days, scale = 25, 10  # 25, 365
     num_points: int = days * scale
 
     x, y = golden_spiral(num_points)
@@ -168,14 +199,14 @@ def run_plt():
                    foreground=to_rgba(color, 0.1 * PHI))
     ]  # Create a stroke path effect to simulate glow
     path_effects_text = common_stroke(holiday_green_glow)
-    path_effects_stars = common_stroke('#FFE066')
+    path_effects_stars = common_stroke(holiday_yellow)
 
     # if False:
-    #     plt.plot(x, y, label='Golden Spiral',
-    #              color=to_rgba(holiday_yellow, 0.3), visible=False)
+    #     plt.plot(x, y, label='Golden Spiral', color=to_rgba(holiday_yellow, 0.3), visible=False)
 
-    # coordinates = compute_coordinates(
-    #   offset=(-0.1 * PHI), days=days, scale=scale, x=x, y=y)
+    # coordinates = compute_coordinates(offset=(-0.1 * PHI), days=days, scale=scale, x=x, y=y)
+
+    # coordinates = compute_coordinates(DAY_OUTER_SPIRAL_OFFSET, days, scale, x, y)
     coordinates = compute_coordinates(offset=DAY_OUTER_SPIRAL_OFFSET)
     plot_days(coordinates)  # plot_days(ax, coordinates, days, holiday_night_bg)
 
@@ -184,7 +215,8 @@ def run_plt():
     plt.axis('off')  # Hide axis ticks and labels
     plt.axis('equal')  # Set equal aspect ratio. 1 unit of x == 1 unit of y
 
-    plt.title('Advent Of Code', color='goldenrod', fontsize='9', visible=False)
+    # if False:
+    #     plt.title('Advent Of Code', color='goldenrod', fontsize='9', visible=False)
 
     return plt  # return fig
 
@@ -204,6 +236,14 @@ def main():
 
 if __name__ == '__main__':
     """
+    20231211180413
+         709491 function calls (695459 primitive calls) in 1.486 seconds
+    20231211175747
+         709516 function calls (695484 primitive calls) in 1.519 seconds
+    20231211175720
+         709516 function calls (695484 primitive calls) in 1.660 seconds
+    20231211173759
+         1477913 function calls (1453819 primitive calls) in 2.689 seconds
     20231211172846
          1511728 function calls (1486125 primitive calls) in 2.644 seconds
     20231211171848
