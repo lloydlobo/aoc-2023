@@ -119,7 +119,7 @@ def plot_days(np_coordinates):
         week_color = get_week_color(week)
 
         sqrtday = np.sqrt(day)
-        star_size = 4 * PHI * sqrtday
+        star_size = 3 * PHI * sqrtday
         alpha_gradient_day = PI_INVERSE * np.arctan(1 / day % PHI)
 
         # Scatter plot for stars
@@ -238,3 +238,44 @@ if __name__ == '__main__':
 20231211160929 1644950 function calls (1617526 primitive calls) in 3.334 seconds
 20231211152352 1644487 function calls (1617063 primitive calls) in 3.504 seconds
 """
+
+
+def print_advent_spial_ascii_art():
+    import numpy as np
+
+    # Function to generate points for a golden spiral
+    def generate_golden_spiral(num_points):
+        theta_values = np.linspace(0, 4 * np.pi, num_points)
+        r_values = np.exp(0.30635 * theta_values)  # Golden ratio approximation
+
+        x_values = r_values * np.cos(theta_values)
+        y_values = r_values * np.sin(theta_values)
+
+        return x_values, y_values
+
+    # Number of points to generate
+    num_points = 100
+    # Generate golden spiral points
+    x_coordinates, y_coordinates = generate_golden_spiral(num_points)
+    # Normalize the coordinates to the range [-1, 1]
+    x_normalized = (x_coordinates - min(x_coordinates)) / (max(x_coordinates) - min(x_coordinates)) * 2 - 1
+    y_normalized = (y_coordinates - min(y_coordinates)) / (max(y_coordinates) - min(y_coordinates)) * 2 - 1
+    # Create a grid to represent the ASCII art
+    num_rows = round(36)  # height
+    num_cols = round(num_rows * (1.618 ** 3))  # Adjusted for a potentially wider terminal
+    ascii_grid = [[' ' for _ in range(num_cols)] for _ in range(num_rows)]
+    seen = []
+    # Map the golden spiral points to the ASCII grid
+    for i in range(num_points):
+        row_index = int((num_rows - 1) * (y_normalized[i] + 1) / 2)
+        col_index = int((num_cols - 1) * (x_normalized[i] + 1) / 2)
+        day = ((round(i / 4)) % 26)
+        if day not in seen:
+            seen.append(day)
+            ascii_grid[row_index][col_index] = str(day)  # '*'
+    # Print the ASCII art
+    for row in ascii_grid:
+        print(''.join(row))
+
+
+print_advent_spial_ascii_art()
