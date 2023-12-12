@@ -119,7 +119,7 @@ def plot_days(np_coordinates):
         week_color = get_week_color(week)
 
         sqrtday = np.sqrt(day)
-        star_size = 4 * PHI * sqrt
+        star_size = 4 * PHI * sqrtday
         alpha_gradient_day = PI_INVERSE * np.arctan(1 / day % PHI)
 
         # Scatter plot for stars
