@@ -5,6 +5,7 @@ import math
 import re
 import regex
 import sys
+import copy
 from collections import deque, defaultdict, Counter
 from pprint import pprint
 from typing import TypeVar, Generator, Iterable, Tuple, List, Any
