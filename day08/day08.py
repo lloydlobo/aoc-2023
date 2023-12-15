@@ -73,14 +73,18 @@ def lcm_of_list(steps_list: list[int]) -> int | None:
     return cur_lcm
 
 
-def parse_data(D: str) -> tuple[list[int], dict[str, tuple[str]]]:
-    def get_neighbour_nodes(line: str) -> tuple[str]:
-        ns: list[str] = line.replace('(', '').replace(')', '').split(',')
-        return tuple(map(str.strip, ns))
+def get_neighbour_nodes(line: str) -> tuple[str]:
+    # replacements = ['(', ')']
+    # ns = [''.join([c for c in line if c not in replacements]).strip() for line in line.split(',')]
+    # replacements = {'(': '', ')': ''}
+    # ns = [substr.translate(str.maketrans(replacements)).strip() for substr in line.split(',')]
+    ns: list[str] = line.replace('(', '').replace(')', '').split(',')
+    return tuple(map(str.strip, ns))
 
+
+def parse_data(D: str) -> tuple[list[int], dict[str, tuple[str]]]:
     directions = [1 if d == 'R' else 0 for d in D.split()[0]]
     nodes = {line.split('=')[0].strip(): get_neighbour_nodes(line.split('=')[1]) for line in D.splitlines()[2:]}
-
     return directions, nodes
 
 
