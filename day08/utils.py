@@ -42,15 +42,34 @@ def check(part1, part2):
 # References:
 #   - https://github.com/mcpower/adventofcode/blob/master/utils.py
 
-def lmap(func, *iterables):
+def lmap(func, *iterables) -> list:
     return list(map(func, *iterables))
 
 
-def ljoins(l: list[Any], sep=''):
-    return sep.join(lmap(str, l))
+def ljoinstr(arr: list[Any], sep='') -> str:
+    return sep.join(lmap(str, arr))
 
 
 def ints(s: str) -> list[int]:
     return lmap(int, re.findall(r"-?\d+", s))
 
+
 # endregion
+def gcd(a: int, b: int) -> int:
+    """
+    Greatest Common Divisor
+    @usage:
+        lcm = abs(a * b) // gcd(a, b)
+    """
+    while b:
+        a, b = b, a % b
+    return a
+
+
+def lcm(a: int, b: int):
+    """
+    Least Common Multiple
+    @usage:
+        lcm_of_3 = lcm(lcm(12, 18), 24)
+    """
+    return abs(a * b) // gcd(a, b)
