@@ -8,6 +8,7 @@ import re
 import regex
 import sys
 import copy
+import numpy as np
 from collections import deque, defaultdict, Counter
 from pprint import pprint
 from typing import TypeVar, Generator, Iterable, Tuple, List, Any
