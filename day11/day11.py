@@ -20,49 +20,78 @@ def part2(data):
     D = data.strip()
     d = parse_data(D)
     # p2 = solve(d)
-    # print(p2)  # 2 | 957
+    # print(p2)  # 8410 | ?
+
+
+def solve(data):
+    U = Universe(data, '#', '.')
+    univ = U.expand_universe()  # U.describe(universe)
+    galaxy_positions = [(c, Position(i, j)) for i, r in enumerate(univ) for j, c in enumerate(r) if isinstance(c, int)]
+    history, visited = defaultdict(int), set()
+    for id1, cur in galaxy_positions:
+        history[id1]  # history[id1] = 0
+        for id2, other in galaxy_positions:
+            compared: tuple[int, int] = tuple(sorted((id1, id2)))
+            if (id1 != id2) and (compared not in visited):
+                distance = U.manhattan_distance(cur.x, cur.y, other.x, other.y)
+                history[id1] += distance
+                visited.add(compared)
+    return sum(history.values())  # sum min dist btw galaxies
 
 
 def parse_data(data: str):
-    # """
-    # [list(map(int, line.split())) for line in data.splitlines()]
-    # rows = list(map(str.rsplit, data.splitlines()))
-    # grid = [list(r.strip()) for r in data.splitlines()]  # 2D grid
-    # """
     return strtogrid(multiline_str=data)
 
 
-class Universes:
-    def __init__(self, grid):
+class Position:
+    def __init__(self, x: int, y: int):
+        self.x = x
+        self.y = y
+
+
+class Universe:
+    def __init__(self, grid, symbol_galaxy, symbol_empty):
         self.grid = grid
         self.grid_as_cols = gridtranspose(grid)
-        self.symbol_galaxy = '#'
-        self.symbol_empty = '.'
-        self.nr = len(self.grid)
-        self.nc = len(self.grid[0])
+        self.symbol_galaxy = symbol_galaxy
+        self.symbol_empty = symbol_empty
+        self.n_rows = len(self.grid)
+        self.n_cols = len(self.grid[0])
 
-    def count_row(self, idx_row):
+    def describe(self, grid=None, with_pos=False):
+        cur = grid if grid else self.grid
+        if not with_pos:
+            pprint(cur, indent=8, compact=False, width=120, depth=2)
+        else:
+            for i, r in enumerate(cur):
+                # for j, c in enumerate(r): print((i, j), c, end=' ')
+                for j, c in enumerate(r): print(f'{i}_{j} {repr(c)}', end=' ')
+                print()
+
+    def count_rows(self, idx_row):
         return Counter(self.grid[idx_row])
 
-    def count_transposed_col(self, idx_col):
+    def count_transposed_cols(self, idx_col):
         return Counter(self.grid_as_cols[idx_col])
 
-    def row_has_universe(self, idx_row):
-        return self.symbol_galaxy in self.count_row(idx_row=idx_row)
+    def row_has_galaxy(self, idx_row):
+        return self.symbol_galaxy in self.count_rows(idx_row)
 
-    def col_has_universe(self, idx_col):
-        return self.symbol_galaxy in self.count_transposed_col(idx_col=idx_col)
+    def col_has_galaxy(self, idx_col):
+        return self.symbol_galaxy in self.count_transposed_cols(idx_col)
 
-    def get_empty_row_col(self):
-        r_index = [i for i, r in enumerate(self.grid) if not self.row_has_universe(idx_row=i)]
-        c_index = [i for i, r in enumerate(self.grid_as_cols) if not self.col_has_universe(idx_col=i)]
-        return dict(r_index=r_index, c_index=c_index)
+    def get_empty_row_col(self) -> dict[str, list]:
+        idx_rows = [i for i in range(self.n_rows) if not self.row_has_galaxy(i)]
+        idx_cols = [i for i in range(self.n_cols) if not self.col_has_galaxy(i)]
+        return dict(idx_rows=idx_rows, idx_cols=idx_cols)
 
-    def lst_galaxy_pos(self):
+    def get_galaxy_positions(self):
         gs = []
         for i, r in enumerate(self.grid):
             for j, c in enumerate(r):
                 if self.is_sym_galaxy(symbol=c):
+                    # gpos=Position(i,j)
+                    # print(gpos)
                     gs.append((i, j))
         return gs
 
@@ -88,69 +117,19 @@ class Universes:
     def expand_universe(self):
         grid_galaxy_id = self.__assign_galaxy_id()
         zero_rows, zero_cols = self.get_empty_row_col().values()
+
         for col in reversed(zero_cols):  # Duplicate all 'zero cols' in place
-            for row in range(self.nr):
-                grid_galaxy_id[row].insert(col + 1, '.')
+            for row in range(self.n_rows):
+                grid_galaxy_id[row].insert(col + 1, self.symbol_empty)
+
         for row in reversed(zero_rows):  # Duplicate all 'zero rows' in place
             grid_galaxy_id.insert(row + 1, grid_galaxy_id[row][:])
+
         return grid_galaxy_id
 
-    def describe(self, grid=None, with_pos=False):
-        cur = grid if grid else self.grid
-        if not with_pos:
-            pprint(cur, indent=8, compact=False, width=120, depth=2)
-        else:
-            for i, r in enumerate(cur):
-                # for j, c in enumerate(r): print((i, j), c, end=' ')
-                for j, c in enumerate(r): print(f'{i}_{j} {repr(c)}', end=' ')
-                print()
-
-
-def manhattan_distance(x1, y1, x2, y2) -> int:
-    return abs(x2 - x1) + abs(y2 - y1)
-
-
-def solve(data):
-    """
-    for i, r in enumerate(U.grid):
-        for j, c in enumerate(r):
-            # print((i, j), (c), end=' ')
-            pass
-        # print()
-        pass
-    """
-    U = Universes(data)
-    universe = U.expand_universe()
-    # U.describe(universe)
-
-    galaxy_positions = []
-    for i, r in enumerate(universe):
-        for j, c in enumerate(r):
-            if isinstance(c, int):
-                galaxy_positions.append((c, (i, j)))
-    # pprint(dict(galaxy_positions=galaxy_positions))
-
-    history = {}
-    visited = set()
-    for id1, galaxy in galaxy_positions:
-        cur = galaxy
-        x1, y1 = cur
-        history[id1] = 0
-        for i in range(len(galaxy_positions)):
-            tmp = galaxy_positions[i]
-            id2, (x2, y2) = tmp
-            # compared = (id1, (x1, y1, x2, y2))
-            # compared = ((x1, y1), (x2, y2))
-            compared = (id1, id2)
-            if id1 != id2 and (id1, id2) not in visited and (id2, id1) not in visited:
-                # if id1 != id2 and compared not in visited:
-                visited.add(compared)
-                history[id1] += manhattan_distance(x1, y1, x2, y2)
-    # pprint(history)
-    # pprint(visited, indent=4, width=80, compact=True)
-    sum_min_dist_btw_g = sum([x for x in history.values()])
-
-    return sum_min_dist_btw_g
+    @staticmethod
+    def manhattan_distance(x1, y1, x2, y2) -> int:
+        return abs(x2 - x1) + abs(y2 - y1)
 
 
 profile_stats_test = 'profile_stats_check_test'
