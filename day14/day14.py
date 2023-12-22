@@ -67,7 +67,7 @@ class TiltingGrid:
         """
         NOTE: The trick it seems was to let it iterate for longer repeation of matching patterns.
                When the length of the seen set stabilized, it's a safe bet to return the
-               expectedtilted grid after 1_000_000_000 cycles.
+               expected tilted grid after rolling grid 1_000_000_000 times (or 1_000_000_000 * 4 cycles.)
                {'cycle_stats': {0: {'cycle': 143, 'cycle_len': 143, 'seen_len': 142},
                                 ...
                                 150: {'cycle': 293, 'cycle_len': 293, 'seen_len': 142}}}
