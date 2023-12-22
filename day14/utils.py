@@ -92,7 +92,7 @@ def lcm(a: int, b: int):
 
 
 def gridinit(rows, cols, value=None):
-    """Create a 2D board with the specified number of rows and columns."""
+    """Create a 2D grid with the specified number of rows and columns."""
     return [[value] * cols for _ in range(rows)]  # return [[default_value for _ in range(cols)] for _ in range(rows)]
 
 
@@ -101,7 +101,7 @@ def transpose(x):
 
 
 def gridtranspose(grid: list[list]):
-    """Transpose a 2D board by swapping rows and columns."""
+    """Transpose a 2D grid by swapping rows and columns."""
     nr, nc = len(grid), len(grid[0])
     return [[grid[j][i] for j in range(nr)] for i in range(nc)]
 
