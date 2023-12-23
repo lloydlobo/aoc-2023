@@ -11,7 +11,7 @@ import regex
 import sys
 import timeit
 
-from collections import deque, defaultdict, Counter
+from collections import deque, defaultdict, Counter, OrderedDict
 from enum import Enum
 from functools import lru_cache
 from io import StringIO
@@ -59,7 +59,7 @@ def ljoinstr(lst: list[Any], sep='') -> str:
 
 
 def ints(s: str) -> list[int]:
-    # regex r"-?\d+" matches sequences of one or more digits (\d+) optionally preceded by a minus sign (-?).
+    # regex r"-?\d+" matches seqs of one or more digits (\d+) optionally preceded by a minus sign (-?).
     # Doesn't explicitly match a single zero (0), especially when it stood alone.
     return lmap(int, re.findall(r"-?\d+", s))
 
