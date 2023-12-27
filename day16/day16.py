@@ -36,7 +36,7 @@ class Position:
         return 0 <= nr < NR and 0 <= nc < NC
 
 
-def solve(grid: list[list[str]], is_part2: bool = False) -> tuple[int, int, int, int]:
+def solve(grid: list[list[str]], is_part2: bool = False) -> set[tuple[int, int, int, int]]:
     NR, NC = len(grid), len(grid[0])
     # -------------------------------------------------------------------------
     P: Position = Position(0, -1, Heading.E)
@@ -81,7 +81,7 @@ def solve(grid: list[list[str]], is_part2: bool = False) -> tuple[int, int, int,
     return seen
 
 
-def count_multiple_visited(seen: tuple[int, int, int, int]) -> int:
+def count_multiple_visited(seen: set[tuple[int, int, int, int]]) -> int:
     return len(energized := {pos := s[:2] for s in seen})
 
 
@@ -94,7 +94,7 @@ def part1(data: str):
 
 def part2(data: str):
     D = [list(r.rstrip()) for r in data.rstrip().splitlines()]
-    solved = solve(D)
+    solved = solve(D, is_part2=True)
     p2 = count_multiple_visited(solved)
     print(f'{p2=}')  # 51 | ?
 
