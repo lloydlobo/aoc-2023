@@ -1,3 +1,5 @@
+from collections import deque
+
 from utils import *
 
 
@@ -38,7 +40,7 @@ def solve(grid: list[list[str]], is_part2: bool = False) -> tuple[int, int, int,
     NR, NC = len(grid), len(grid[0])
     # -------------------------------------------------------------------------
     P: Position = Position(0, -1, Heading.E)
-    q = deque([P])
+    q: deque[Position] = deque([P])
     seen = set()
     # -------------------------------------------------------------------------
     while q:
@@ -66,11 +68,11 @@ def solve(grid: list[list[str]], is_part2: bool = False) -> tuple[int, int, int,
             case '|':
                 if dc:  # travelling horizontally
                     dr, dc = 1, 0  # signal original beam to head north
-                q.append(Position(nr, nc, Heading.from_tuple((-1, 0))))  # Create new beam to head south
+                    q.append(Position(nr, nc, Heading.from_tuple((-1, 0))))  # Create new beam to head south
             case '-':
                 if dr:  # travelling vertically
                     dr, dc = 0, -1  # signal original beam to head west
-                q.append(Position(nr, nc, Heading.from_tuple((0, 1))))  # Create new beam to head east
+                    q.append(Position(nr, nc, Heading.from_tuple((0, 1))))  # Create new beam to head east
             case _:
                 raise ValueError(f'Unexpected tile/cell value: {tile}')
         # ---------------------------------------------------------------------
