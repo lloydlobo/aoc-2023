@@ -5,10 +5,12 @@ import heapq
 import itertools
 import math
 import numpy as np
+import os
 import pstats
 import re
 import regex
 import sys
+import time
 import timeit
 
 from collections import deque, defaultdict, Counter, OrderedDict
@@ -121,4 +123,10 @@ def dbg_lstrasgrid(lst_str: list[str]):
             print(end=f'{c}\t')
         print()
 
+
+# endregion
+
+# region OS specific
+OS_ENVIRON = os.environ.get('OS', '').lower()
+CMD_CLEAR = 'cls' if 'win' in OS_ENVIRON else 'clear'
 # endregion
