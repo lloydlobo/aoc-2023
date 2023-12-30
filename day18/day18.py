@@ -19,20 +19,9 @@ def solve(plans, is_part2):
     area = shoelace_formula(path)
     n_outer_cells = sum([x[1] for x in plans])
     n_inner_cells = area - (n_outer_cells // 2) + 1
-    # print(f'{area,n_inner_cells,n_outer_cells=}')  # 42.0 | ?
     # area,n_inner_cells,n_outer_cells=(42.0, 24.0, 38) # p1=62.0
     # area,n_inner_cells,n_outer_cells=(31945.0, 30401.0, 3090) # p1=33491.0
     return n_inner_cells + n_outer_cells
-
-
-def shoelace_formula(vertices):
-    """
-    # vertices: list of tuples [(x1, y1), (x2, y2), ..., (xn, yn)]
-    Thanks to tip from the [community](https://www.reddit.com/r/adventofcode/comments/18l0qtr/2023_day_18_solutions/)
-    """
-    n = len(vertices)
-    area = 0.5 * abs(sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in zip(vertices, vertices[1:] + [vertices[0]])))
-    return area
 
 
 def parse_input(data):

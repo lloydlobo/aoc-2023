@@ -73,23 +73,6 @@ def intsall(s: str) -> list[int]:
 # endregion
 
 
-# region Math
-
-def gcd(a: int, b: int) -> int:
-    """Greatest Common Divisor @usage: lcm = abs(a * b) // gcd(a, b)"""
-    while b:
-        a, b = b, a % b
-    return a
-
-
-def lcm(a: int, b: int):
-    """Least Common Multiple @usage: lcm_of_3 = lcm(lcm(12, 18), 24)"""
-    return abs(a * b) // gcd(a, b)
-
-
-# endregion
-
-
 # region Grid
 
 
@@ -129,4 +112,41 @@ def dbg_lstrasgrid(lst_str: list[str]):
 # region OS specific
 OS_ENVIRON = os.environ.get('OS', '').lower()
 CMD_CLEAR = 'cls' if 'win' in OS_ENVIRON else 'clear'
+
+
+# endregion
+
+# region Math
+
+def gcd(a: int, b: int) -> int:
+    """Greatest Common Divisor @usage: lcm = abs(a * b) // gcd(a, b)"""
+    while b:
+        a, b = b, a % b
+    return a
+
+
+def lcm(a: int, b: int):
+    """Least Common Multiple @usage: lcm_of_3 = lcm(lcm(12, 18), 24)"""
+    return abs(a * b) // gcd(a, b)
+
+
+def picks_theorem(I: int, B: int) -> int:
+    """
+    I: number of interior lattice points
+    B: number of lattice points on the boundary
+    A = I + (B // 2) - 1
+    """
+    A = I + (B // 2) - 1
+    return A
+
+
+def shoelace_formula(vertices) -> float:
+    """
+    # vertices: list of tuples [(x1, y1), (x2, y2), ..., (xn, yn)]
+    Thanks to tip from the [community](https://www.reddit.com/r/adventofcode/comments/18l0qtr/2023_day_18_solutions/)
+    """
+    n = len(vertices)
+    area = 0.5 * abs(sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in zip(vertices, vertices[1:] + [vertices[0]])))
+    return area
+
 # endregion
