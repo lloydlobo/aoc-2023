@@ -1,3 +1,6 @@
+import math
+from collections import defaultdict
+
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -5,55 +8,69 @@ from utils import *
 
 
 def data_to_graph_parts(data: str):
-    modules = {}
-    flips, conjs = defaultdict(int), defaultdict(dict)
+    mods = {}
+    flips, conjs = defaultdict(int), defaultdict(dict)  # '%', '&'
+
     for line in data.splitlines():
         src, _, *dsts = line.replace(',', '').split()
-        m_kind, m_src = (src[0], src[1:]) if src[0] in '%&' else ('', src)
-        modules[m_src] = m_kind, dsts
+        k, s = (src[0], src[1:]) if src[0] in '%&' else ('', src)
+        mods[s] = k, dsts
+
         for dst in dsts:
-            conjs[dst][m_src] = 0  # off initailly
-    return modules, flips, conjs
+            conjs[dst][s] = 0  # off initially
+
+    return mods, flips, conjs
 
 
-def solve(modules, flips, conjs, is_p2):
-    result = None
-    # print(f'{modules, flips, conjs = }')
-    broadcaster = 'broadcaster'
-    assert modules.get(broadcaster) != None
-    btn_presses = 0
-    p_counts = [0, 0]  # p_counts[0]: low; p_counts[1]: high
-    li_btns, limit_btns = 0, 3000
-    while True and (li_btns := li_btns + 1) < limit_btns:
-        if btn_presses == 1_000:
-            result = math.prod(p_counts)
-            print(f'{result = }')
-            if is_p2: break
-        btn_presses += 1
-        q = [(None, broadcaster, 0)]  # m_src, m_cur, m_pulse_in
-        li_q, limit_q = 0, 3000
-        while q and ((li_q := li_q + 1) < limit_q):
-            m_src, m_cur, m_pulse_in = q.pop(0)
-            assert m_pulse_in in {0, 1}
-            p_counts[m_pulse_in] += 1
-            if m_cur not in modules:
+def solve(mods, flips, conjs, is_p2):
+    res = None
+    bc = 'broadcaster'
+    assert mods.get(bc) is not None
+
+    btns = 0
+    counts = [0, 0]  # counts[0]: low; counts[1]: high
+    btns_limit, max_btns = 0, 3000
+
+    while True and (btns_limit := btns_limit + 1) < max_btns:
+        if btns == 1_000:
+            res = math.prod(counts)
+            if is_p2:
+                break
+
+        btns += 1
+        q = [(None, bc, 0)]  # prev_mod, cur_mod, pulse_in
+        q_limit, max_q = 0, 3000
+
+        while q and ((q_limit := q_limit + 1) < max_q):
+            prev_mod, cur_mod, pulse_in = q.pop(0)
+            assert prev_mod is None if cur_mod == bc else True
+            assert pulse_in in {0, 1}
+
+            counts[pulse_in] += 1
+
+            if cur_mod not in mods:
                 continue
-            nxt_m_kind, nxt_ms = modules[m_cur]
-            match nxt_m_kind, m_pulse_in:
-                case '', _:
-                    m_pulse_out = m_pulse_in
-                case '%', 0:
-                    flips[m_cur] = not flips[m_cur]  # flip and record on/off state
-                    m_pulse_out = flips[m_cur]
-                case '&', _:
-                    conjs[m_cur][m_src] = m_pulse_in  # record pulse_in from m_src -> m_cur mapping
-                    m_pulse_out = not all(conjs[m_cur].values())  # if all([pulse_type,..]) -> opposite(pulse_type)
-                case _, _:
+
+            cur_mod_kind, nxts = mods[cur_mod]
+
+            match (cur_mod_kind, pulse_in):  # input pulse from prev_mod to cur_mod
+                case ('', _):
+                    pulse_out = pulse_in
+                case ('%', 0):
+                    flips[cur_mod] = not flips[cur_mod]  # flip and record on/off state
+                    pulse_out = flips[cur_mod]
+                case ('&', _):
+                    conjs[cur_mod][prev_mod] = pulse_in  # record pulse_in from prev_mod -> cur_mod mapping
+                    pulse_out = not all(conjs[cur_mod].values())  # if all([pulse_type,..]) -> opposite(pulse_type)
+                case (_, _):
                     continue
-            for nxt_m in nxt_ms:
-                q.append((m_cur, nxt_m, m_pulse_out))
-            # print(f'{(m_src,m_cur,m_pulse_in),(nxt_ms,nxt_m_kind),(m_pulse_out) = }')
-    return result
+
+            assert pulse_out in {0, 1}
+
+            for nxt in nxts:
+                q.append((cur_mod, nxt, pulse_out))
+
+    return res
 
 
 def part1(data):
