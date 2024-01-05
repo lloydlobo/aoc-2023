@@ -18,7 +18,7 @@ from enum import Enum
 from functools import lru_cache
 from io import StringIO
 from pprint import pprint
-from typing import TypeVar, Generator, Iterable, Tuple, List, Any
+from typing import TypeVar, Generator, Iterable, Tuple, List, Any, Union
 
 sys.setrecursionlimit(100_000)
 
